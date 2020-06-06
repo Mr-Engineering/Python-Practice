@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 
+#Creating URL
+
 search = input('What do you want to Search? : ')
 inventor = input('Inventor? : ')
 inventor2 = input('Another Inventor? IF no additional Inventor, Type "no" : ')
@@ -24,6 +26,9 @@ else:
 prdate = '&before=priority:'+prdate_start+'&after=priority:'+prdate_end
 LIMIT = 50
 URL1 = f'http://patent.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page={LIMIT}'
+
+
+#Find Page
 
 def get_last_page():
     gp_result = requests.get(URL)
@@ -60,6 +65,7 @@ def extract_job(html):
     return {'title': title, 'company': company, 'location': location,
             'link': f'https://www.indeed.com/viewjob?jk={job_id}'}
 
+#Extract information
 
 def extract_jobs(last_page):
     jobs = []
