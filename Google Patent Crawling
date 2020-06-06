@@ -1,0 +1,81 @@
+import requests
+from bs4 import BeautifulSoup
+
+search = input('What do you want to Search? : ')
+inventor = input('Inventor? : ')
+inventor2 = input('Another Inventor? IF no additional Inventor, Type "no" : ')
+assignee = input('Assignee? : ')
+assignee2 = input('Another Assignee? IF no additional Assignee, Type "no" : ')
+prdate_start = input('Start Date? (ex. 20000101) : ')
+prdate_end = input('End Date? (ex. 20001231) : ')
+synonym = input('Synonym? IF no synonym, Type "no" : ')
+
+if inventor2 == 'no':
+    ivt = '&inventor='+inventor
+else:
+    ivt = '&inventor='+inventor+','+inventor2
+
+if assignee2 == 'no':
+    asn = '&assignee='+assignee
+else:
+    asn = '&assignee='+assignee+','+assignee2
+
+
+prdate = '&before=priority:'+prdate_start+'&after=priority:'+prdate_end
+LIMIT = 50
+URL1 = f'http://patent.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page={LIMIT}'
+
+def get_last_page():
+    gp_result = requests.get(URL)
+
+    gp_soup = BeautifulSoup(gp_result.text, 'html.parser')
+
+    pagination = gp_soup.find('div', {'class': 'pagination'})
+
+    links = pagination.find_all('a')
+
+    pages = []
+
+    for link in links[:-1]:
+        pages.append(int(link.string))
+
+    max_page = pages[-1]
+    return max_page
+
+
+def extract_job(html):
+    title = html.find('div', {'class': 'title'}).find('a')['title']
+
+    company = html.find('span', {'class': 'company'})
+    company_anchor = company.find('a')
+
+    if company_anchor is not None:
+        company = str(company_anchor.string)
+    else:
+        company = str(company.string)
+    company = company.strip()
+    location = html.find('div', {'class': 'recJobLoc'})['data-rc-loc']
+    job_id = html['data-jk']
+
+    return {'title': title, 'company': company, 'location': location,
+            'link': f'https://www.indeed.com/viewjob?jk={job_id}'}
+
+
+def extract_jobs(last_page):
+    jobs = []
+    for page in range(last_page):
+        print(f'Scrapping Page {page}')
+        result = requests.get(f'{URL}&start={page * LIMIT}')
+        soup = BeautifulSoup(result.text, 'html.parser')
+        results = soup.find_all('div', {'class': 'jobsearch-SerpJobCard'})
+        for result in results:
+            job = extract_job(result)
+            jobs.append(job)
+    return jobs
+
+
+def get_jobs():
+    last_page = get_last_page()
+
+    jobs = extract_jobs(last_page)
+    return jobs
