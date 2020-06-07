@@ -25,7 +25,7 @@ else:
 
 prdate = '&before=priority:'+prdate_start+'&after=priority:'+prdate_end
 LIMIT = 50
-URL1 = f'http://patents.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page={LIMIT}'
+URL = f'http://patents.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page={LIMIT}'
 
 
 #Find Page
@@ -35,7 +35,7 @@ def get_last_page():
 
     gp_soup = BeautifulSoup(gp_result.text, 'html.parser')
 
-    pagination = gp_soup.find('div', {'class': 'pagination'})
+    pagination = gp_soup.find('div', {'class': 'style-scope search-results'})
 
     links = pagination.find_all('a')
 
@@ -48,10 +48,10 @@ def get_last_page():
     return max_page
 
 
-def extract_job(html):
-    title = html.find('div', {'class': 'title'}).find('a')['title']
+def extract_pt(html):
+    title = html.find('div', {'class': 'result-title style-scope search-result-item'}).find('a')['title']
 
-    company = html.find('span', {'class': 'company'})
+    company = html.find('span', {'class':'style-scope raw-html'})
     company_anchor = company.find('a')
 
     if company_anchor is not None:
@@ -67,21 +67,32 @@ def extract_job(html):
 
 #Extract information
 
-def extract_jobs(last_page):
-    jobs = []
+def extract_pts(last_page):
+    pts = []
     for page in range(last_page):
         print(f'Scrapping Page {page}')
         result = requests.get(f'{URL}&start={page * LIMIT}')
         soup = BeautifulSoup(result.text, 'html.parser')
         results = soup.find_all('div', {'class': 'jobsearch-SerpJobCard'})
         for result in results:
-            job = extract_job(result)
-            jobs.append(job)
-    return jobs
+            pt = extract_pt(result)
+            pts.append(pt)
+    return pts
 
 
-def get_jobs():
+def get_pts():
     last_page = get_last_page()
 
-    jobs = extract_jobs(last_page)
-    return jobs
+    pts = extract_pts(last_page)
+    return pts
+
+def save_to_file(jobs):
+  file = open('pts.csv', mode='w')
+  writer = csv.writer(file)
+  writer.writerow(['title', 'company', 'location', 'link'])
+  for job in jobs:
+    writer.writerow(list(job.values()))
+  return
+
+pts = get_pts()
+save_to_file(pts)
