@@ -25,7 +25,7 @@ else:
 
 prdate = '&before=priority:'+prdate_start+'&after=priority:'+prdate_end
 LIMIT = 50
-URL1 = f'http://patent.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page={LIMIT}'
+URL1 = f'http://patents.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page={LIMIT}'
 
 
 #Find Page
