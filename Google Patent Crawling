@@ -1,5 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_driver_path = 'D:/Study/Python_Study/Drivers/chromedriver.exe'
+driver = webdriver.Chrome(options=chrome_options, executable_path=chrome_driver_path)
 
 #Creating URL
 
@@ -23,9 +30,12 @@ else:
     asn = '&assignee='+assignee+','+assignee2
 
 
-prdate = '&before=priority:'+prdate_start+'&after=priority:'+prdate_end
+prdate = '&before=priority:'+prdate_end+'&after=priority:'+prdate_start
 LIMIT = 50
 URL = f'http://patents.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page={LIMIT}'
+
+driver.get(URL)
+html = driver.page_source
 
 
 #Find Page
@@ -33,7 +43,7 @@ URL = f'http://patents.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page=
 def get_last_page():
     gp_result = requests.get(URL)
 
-    gp_soup = BeautifulSoup(gp_result.text, 'html.parser')
+    gp_soup = BeautifulSoup(html, 'html.parser')
 
     pagination = gp_soup.find('div', {'class': 'style-scope search-results'})
 
