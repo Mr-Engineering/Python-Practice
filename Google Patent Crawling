@@ -37,24 +37,26 @@ URL = f'http://patents.google.com/?q='+search+','+synonym+ivt+asn+prdate+'&page=
 driver.get(URL)
 html = driver.page_source
 
+gp_soup = BeautifulSoup(html, 'html.parser')
+print(gp_soup)
+pagination = gp_soup.find('div', {'id': 'pagingAndInfo'})
+
+print(pagination)
 
 #Find Page
 
 def get_last_page():
-    gp_result = requests.get(URL)
 
     gp_soup = BeautifulSoup(html, 'html.parser')
 
-    pagination = gp_soup.find('div', {'class': 'style-scope search-results'})
+    pagination = gp_soup.find_all('div', {'class': 'style-scope search-paging'})
 
-    links = pagination.find_all('a')
-
-    pages = []
+    links = pagination.find('a')
 
     for link in links[:-1]:
         pages.append(int(link.string))
 
-    max_page = pages[-1]
+    max_page = pages[1]
     return max_page
 
 
